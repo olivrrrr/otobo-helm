@@ -1,0 +1,12 @@
+# Helm
+charts/*/charts/
+*.tgz
+
+# Secrets - NIEMALS einchecken
+*secret*.yaml
+*password*
+.env
+
+# OS
+.DS_Store
+Thumbs.db

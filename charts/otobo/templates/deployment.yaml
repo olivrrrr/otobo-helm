@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otobo.fullname" . }}
+  labels:
+    {{- include "otobo.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "otobo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "otobo.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["web"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "otobo.fullname" . }}-config
+            - secretRef:
+                name: {{ if .Values.secret.existingSecret }}{{ .Values.secret.existingSecret }}{{ else }}{{ include "otobo.fullname" . }}-secret{{ end }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources.web | nindent 12 }}
+          volumeMounts:
+            - name: otobo-opt
+              mountPath: /opt/otobo
+
+        - name: daemon
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["daemon"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "otobo.fullname" . }}-config
+            - secretRef:
+                name: {{ if .Values.secret.existingSecret }}{{ .Values.secret.existingSecret }}{{ else }}{{ include "otobo.fullname" . }}-secret{{ end }}
+          resources:
+            {{- toYaml .Values.resources.daemon | nindent 12 }}
+          volumeMounts:
+            - name: otobo-opt
+              mountPath: /opt/otobo
+
+      volumes:
+        - name: otobo-opt
+          persistentVolumeClaim:
+            claimName: {{ include "otobo.fullname" . }}-opt

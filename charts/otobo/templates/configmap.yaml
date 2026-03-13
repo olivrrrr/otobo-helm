@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otobo.fullname" . }}-config
+  labels:
+    {{- include "otobo.labels" . | nindent 4 }}
+data:
+  OTOBO_DB_HOST: {{ .Values.db.host | quote }}
+  OTOBO_DB_PORT: {{ .Values.db.port | quote }}
+  OTOBO_DB_NAME: {{ .Values.db.name | quote }}
+  OTOBO_DB_USER: {{ .Values.db.user | quote }}
